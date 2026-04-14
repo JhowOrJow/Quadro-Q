@@ -52,7 +52,27 @@ app.get('/api/registros', (req, res) => {
     res.json(registros);
 });
 
+/* Valida se a data está dentro da janela permitida (hoje e 2 dias anteriores) */
+function dataDentroDoLimite(dataCal) {
+    if (!dataCal) return false;
+    const hoje  = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    const limite = new Date(hoje);
+    limite.setDate(hoje.getDate() - 2);
+    const alvo = new Date(dataCal + 'T00:00:00');
+    return alvo >= limite && alvo <= hoje;
+}
+
 app.post('/api/registros', (req, res) => {
+    const { dataCal } = req.body;
+
+    // Validação server-side: bloqueia datas fora da janela permitida
+    if (!dataDentroDoLimite(dataCal)) {
+        return res.status(400).json({
+            erro: 'Apontamento retroativo bloqueado. Limite: 2 dias anteriores à data atual.'
+        });
+    }
+
     const db = lerDB();
     const agora = new Date().toISOString();
     const novo = {

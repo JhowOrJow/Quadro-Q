@@ -10,8 +10,6 @@
     <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
 </head>
 <body>
-
-<!-- ═══ HEADER ═══ -->
 <header>
     <div class="logo">QUALITY<span>NCF</span><small>GESTÃO VISUAL v4.1</small></div>
     <nav class="tabs">
@@ -26,11 +24,9 @@
 
 <main class="container">
 
-    <!-- ═══ ABA 1: APONTAMENTO ═══ -->
     <section id="tab-apontamento" class="tab-content active">
         <div class="layout-apontamento">
 
-            <!-- Calendário -->
             <div class="card calendar-box">
                 <div class="calendar-header-ui">
                     <div style="display:flex;align-items:center;gap:10px">
@@ -56,7 +52,7 @@
                 </div>
             </div>
 
-            <!-- Diário de Bordo -->
+
             <div class="card diary-box">
                 <div class="diary-top">
                     <h3>DIÁRIO DE BORDO — <span id="dia-label" class="accent">Selecione um dia</span></h3>
@@ -79,7 +75,6 @@
                     <div id="fields" class="hidden">
                         <div class="form-section">
 
-                            <!-- Linha 1: Setor + Máquina -->
                             <div class="form-row">
                                 <div class="field">
                                     <label>Setor Fabril</label>
@@ -93,7 +88,7 @@
                                 </div>
                             </div>
 
-                            <!-- Linha 2: Produto + Cliente -->
+                    
                             <div class="form-row">
                                 <div class="field">
                                     <label>Produto</label>
@@ -115,7 +110,6 @@
                                 </div>
                             </div>
 
-                            <!-- Linha 3: Motivo + Inspetor -->
                             <div class="form-row">
                                 <div class="field">
                                     <label>Motivo do Refugo</label>
@@ -140,7 +134,7 @@
                                 </div>
                             </div>
 
-                            <!-- Linha 4: Qtd -->
+                     
                             <div class="form-row">
                                 <div class="field">
                                     <label>Qtd. Defeituosa</label>
@@ -148,7 +142,6 @@
                                 </div>
                             </div>
 
-                            <!-- Linha 5: Descrição livre -->
                             <div class="field">
                                 <label>Descrição Adicional (opcional)</label>
                                 <textarea id="descricao" placeholder="Detalhes adicionais sobre a ocorrência..."></textarea>
@@ -163,10 +156,10 @@
         </div>
     </section>
 
-    <!-- ═══ ABA 2: ANALYTICS ═══ -->
+
     <section id="tab-graficos" class="tab-content">
 
-        <!-- Filtros -->
+  
         <div class="analytics-header">
             <div class="analytics-title">▸ PAINEL DE INDICADORES DE QUALIDADE</div>
             <div class="filter-bar">
@@ -207,7 +200,7 @@
             </div>
         </div>
 
-        <!-- KPIs -->
+   
         <div class="kpi-grid">
             <div class="kpi-card">
                 <div class="kpi-label">Total NC</div>
@@ -236,10 +229,10 @@
             </div>
         </div>
 
-        <!-- Charts -->
+      
         <div class="charts-grid">
 
-            <!-- Tendência diária — FULL -->
+        
             <div class="chart-card chart-full">
                 <div class="chart-header">
                     <span class="chart-title">📈 Tendência Diária de NC — Meta: 3/dia</span>
@@ -250,7 +243,6 @@
                 <div class="chart-body"><div id="chart-trend" style="height:280px"></div></div>
             </div>
 
-            <!-- Comparativo Anual — FULL -->
             <div class="chart-card chart-full">
                 <div class="chart-header">
                     <span class="chart-title">📅 Comparativo Anual por Mês — Meta: 10/mês</span>
@@ -261,7 +253,6 @@
                 <div class="chart-body"><div id="chart-anual" style="height:240px"></div></div>
             </div>
 
-            <!-- Pareto Setor -->
             <div class="chart-card">
                 <div class="chart-header">
                     <span class="chart-title">🔍 Pareto por Setor (drill-down)</span>
@@ -273,7 +264,7 @@
                 <div class="chart-body"><div id="chart-setor" style="height:280px"></div></div>
             </div>
 
-            <!-- Turno Pie -->
+    
             <div class="chart-card">
                 <div class="chart-header">
                     <span class="chart-title">🔄 Distribuição por Turno Produtivo</span>
@@ -281,7 +272,6 @@
                 <div class="chart-body"><div id="chart-turno" style="height:280px"></div></div>
             </div>
 
-            <!-- Top Clientes -->
             <div class="chart-card">
                 <div class="chart-header">
                     <span class="chart-title">👥 Top Clientes — Reclamações Externas</span>
@@ -289,7 +279,7 @@
                 <div class="chart-body"><div id="chart-cliente" style="height:280px"></div></div>
             </div>
 
-            <!-- Top Produtos -->
+       
             <div class="chart-card">
                 <div class="chart-header">
                     <span class="chart-title">📦 Top Produtos — Por Nº de NC</span>
@@ -297,7 +287,7 @@
                 <div class="chart-body"><div id="chart-produto" style="height:280px"></div></div>
             </div>
 
-            <!-- Motivos de Refugo -->
+      
             <div class="chart-card">
                 <div class="chart-header">
                     <span class="chart-title">⚠️ Motivos de Refugo — Pareto</span>
@@ -305,7 +295,7 @@
                 <div class="chart-body"><div id="chart-motivo" style="height:280px"></div></div>
             </div>
 
-            <!-- Apontamentos por Inspetor -->
+     
             <div class="chart-card">
                 <div class="chart-header">
                     <span class="chart-title">👤 NC por Inspetor</span>
@@ -313,7 +303,7 @@
                 <div class="chart-body"><div id="chart-inspetor" style="height:280px"></div></div>
             </div>
 
-            <!-- Top 15 Máquinas — FULL -->
+       
             <div class="chart-card chart-full">
                 <div class="chart-header">
                     <span class="chart-title">🏭 Top 15 Máquinas / Linhas — Ranking de NC</span>

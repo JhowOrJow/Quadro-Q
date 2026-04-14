@@ -28,6 +28,26 @@ function calcularTurnoLocal() {
     return "3° Turno";
 }
 
+/* ─── VALIDAÇÃO DE DATA ─── */
+/* Retorna true se a data está dentro da janela permitida:
+   hoje e até 2 dias anteriores ao dia atual */
+function dataDentroDoLimite(dStr) {
+    const hoje    = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    const limite  = new Date(hoje);
+    limite.setDate(hoje.getDate() - 2);   // 2 dias atrás
+    const alvo    = new Date(dStr + 'T00:00:00');
+    // Permite: de 2 dias atrás até hoje (não permite datas futuras)
+    return alvo >= limite && alvo <= hoje;
+}
+
+function diasAtraso(dStr) {
+    const hoje = new Date();
+    hoje.setHours(0, 0, 0, 0);
+    const alvo = new Date(dStr + 'T00:00:00');
+    return Math.round((hoje - alvo) / (1000 * 60 * 60 * 24));
+}
+
 /* ─── ESTADO GLOBAL ─── */
 let DB         = [];
 let analytics  = null;
@@ -114,9 +134,19 @@ function renderCalendar() {
         else if (regsDia.some(r => r.cor === 'yellow'))  { cor = 'yellow'; cYellow++; }
         else if (regsDia.some(r => r.cor === 'green'))   { cor = 'green';  cGreen++; }
 
+        const permitido = dataDentroDoLimite(dStr);
+        const isFuturo  = new Date(dStr + 'T00:00:00') > new Date(new Date().toISOString().slice(0,10) + 'T00:00:00');
+
+        let extraClass = '';
+        if (isFuturo)        extraClass = ' bloqueado futuro';
+        else if (!permitido) extraClass = ' bloqueado passado';
+
         const div = document.createElement('div');
-        div.className = `dia ${cor}${isToday ? ' today' : ''}${selectedDate === dStr ? ' selected' : ''}`;
+        div.className = `dia ${cor}${isToday ? ' today' : ''}${selectedDate === dStr ? ' selected' : ''}${extraClass}`;
         div.innerText = i;
+        div.title     = isFuturo    ? 'Data futura — não permitido'
+                      : !permitido  ? 'Apontamento bloqueado (limite: 2 dias anteriores)'
+                      : '';
 
         if (regsDia.length > 1) {
             const badge = document.createElement('div');
@@ -124,7 +154,12 @@ function renderCalendar() {
             badge.innerText = regsDia.length;
             div.appendChild(badge);
         }
-        div.onclick = () => openDiary(dStr);
+
+        if (permitido) {
+            div.onclick = () => openDiary(dStr);
+        } else {
+            div.onclick = () => openDiarioSoLeitura(dStr);
+        }
         grid.appendChild(div);
     }
 
@@ -168,6 +203,47 @@ function openDiary(date) {
     document.getElementById('registros-dia').style.display = 'block';
     document.getElementById('form-nc').classList.remove('hidden');
     renderRegistrosDia(date);
+}
+
+/* ─── DIÁRIO SOMENTE LEITURA (dias bloqueados) ─── */
+function openDiarioSoLeitura(date) {
+    selectedDate  = date;
+    selectedColor = null;
+
+    document.querySelectorAll('.dia.selected').forEach(d => d.classList.remove('selected'));
+    const dayNum = parseInt(date.split('-')[2]);
+    const dias   = document.querySelectorAll('.dia:not(.empty)');
+    if (dias[dayNum - 1]) dias[dayNum - 1].classList.add('selected');
+
+    document.getElementById('dia-label').innerText = formatDateBR(date);
+    document.getElementById('diary-placeholder').style.display = 'none';
+    document.getElementById('registros-dia').style.display = 'block';
+    document.getElementById('form-nc').classList.add('hidden');
+
+    const atraso   = diasAtraso(date);
+    const isFuturo = atraso < 0;
+    const msg = isFuturo
+        ? '\uD83D\uDD12 Data futura — apontamentos não são permitidos.'
+        : `\uD83D\uDD12 Bloqueado — ${atraso} dia(s) atrás. Limite permitido: 2 dias anteriores.`;
+
+    const regs = DB.filter(r => r.dataCal === date);
+    let html = `<div style="background:rgba(248,81,73,0.08);border:1px solid rgba(248,81,73,0.25);border-radius:5px;padding:8px 12px;margin-bottom:10px;font-size:0.78rem;color:#f85149;">${msg}</div>`;
+
+    if (regs.length) {
+        html += regs.map(r => `
+            <div class="registro-item">
+                <div class="ri-cor ${r.cor}"></div>
+                <div class="ri-info">
+                    <div class="ri-setor">${r.setor || '—'} · ${r.maquina || '—'}</div>
+                    <div class="ri-detalhes">${r.produto ? 'Produto: ' + r.produto : ''} ${r.cliente ? '| ' + r.cliente : ''} ${r.quantidade ? '| Qtd: ' + r.quantidade : ''} | ${r.turno || '—'}</div>
+                    ${r.motivo ? '<div class="ri-detalhes" style="color:#c9d1d9">Motivo: ' + r.motivo + '</div>' : ''}
+                    ${r.inspetor ? '<div class="ri-detalhes">Inspetor: ' + r.inspetor + '</div>' : ''}
+                </div>
+            </div>`).join('');
+    } else {
+        html += '<div style="color:#6e7681;font-size:0.78rem;text-align:center;padding:8px;">Nenhum apontamento neste dia</div>';
+    }
+    document.getElementById('registros-dia').innerHTML = html;
 }
 
 function renderRegistrosDia(date) {
@@ -234,6 +310,10 @@ function setCor(c, el) {
 
 async function saveData() {
     if (!selectedDate)  { showToast('Selecione um dia no calendário', 'error'); return; }
+    if (!dataDentroDoLimite(selectedDate)) {
+        showToast('❌ Apontamento retroativo bloqueado! Limite: 2 dias anteriores.', 'error');
+        return;
+    }
     if (!selectedColor) { showToast('Selecione o tipo de ocorrência', 'error'); return; }
 
     const setor = document.getElementById('setor').value;
