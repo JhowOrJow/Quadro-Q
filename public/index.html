@@ -1,0 +1,340 @@
+﻿<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>QualityDesk NCF v4.1 | Gestão Visual de Qualidade</title>
+    <link rel="stylesheet" href="css/style.css">
+    <script src="https://cdn.jsdelivr.net/npm/echarts@5.4.3/dist/echarts.min.js"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Nunito:wght@300;400;600;700;800&family=Source+Code+Pro:wght@400;600&display=swap" rel="stylesheet">
+</head>
+<body>
+
+<!-- ═══ HEADER ═══ -->
+<header>
+    <div class="logo">QUALITY<span>NCF</span><small>GESTÃO VISUAL v4.1</small></div>
+    <nav class="tabs">
+        <button class="tab-btn active" onclick="switchTab('tab-apontamento', this)">📅 Calendário &amp; Apontamento</button>
+        <button class="tab-btn" onclick="switchTab('tab-graficos', this)">📊 Analytics &amp; Indicadores</button>
+    </nav>
+    <div class="header-status">
+        <div id="clock">00:00:00</div>
+        <div id="shift-badge" class="badge">--</div>
+    </div>
+</header>
+
+<main class="container">
+
+    <!-- ═══ ABA 1: APONTAMENTO ═══ -->
+    <section id="tab-apontamento" class="tab-content active">
+        <div class="layout-apontamento">
+
+            <!-- Calendário -->
+            <div class="card calendar-box">
+                <div class="calendar-header-ui">
+                    <div style="display:flex;align-items:center;gap:10px">
+                        <button onclick="prevMonth()" style="background:#1c2128;border:1px solid #30363d;color:#c9d1d9;padding:4px 10px;border-radius:5px;cursor:pointer;font-size:1rem;line-height:1">‹</button>
+                        <h2 id="mes-nome">JANEIRO</h2>
+                        <button onclick="nextMonth()" style="background:#1c2128;border:1px solid #30363d;color:#c9d1d9;padding:4px 10px;border-radius:5px;cursor:pointer;font-size:1rem;line-height:1">›</button>
+                    </div>
+                    <div class="legend-counters">
+                        <div class="count-item red"    title="Reclamação Cliente"><span id="count-red">0</span></div>
+                        <div class="count-item yellow" title="Reclamação Interna"><span id="count-yellow">0</span></div>
+                        <div class="count-item green"  title="Sem Reclamação"><span id="count-green">0</span></div>
+                    </div>
+                </div>
+                <div class="weekdays">
+                    <div class="weekday">DOM</div><div class="weekday">SEG</div><div class="weekday">TER</div>
+                    <div class="weekday">QUA</div><div class="weekday">QUI</div><div class="weekday">SEX</div><div class="weekday">SÁB</div>
+                </div>
+                <div id="calendar-grid" class="calendar-grid"></div>
+                <div class="ui-labels">
+                    <div class="label-btn red">■ RECLAMAÇÃO CLIENTE</div>
+                    <div class="label-btn yellow">■ RECLAMAÇÃO INTERNA</div>
+                    <div class="label-btn green">■ SEM RECLAMAÇÃO</div>
+                </div>
+            </div>
+
+            <!-- Diário de Bordo -->
+            <div class="card diary-box">
+                <div class="diary-top">
+                    <h3>DIÁRIO DE BORDO — <span id="dia-label" class="accent">Selecione um dia</span></h3>
+                </div>
+
+                <div id="diary-placeholder" class="diary-placeholder">
+                    <div class="icon">📋</div>
+                    <div>Selecione um dia no calendário</div>
+                </div>
+
+                <div id="registros-dia" class="registros-dia" style="display:none"></div>
+
+                <div id="form-nc" class="hidden">
+                    <div class="color-selector-circles">
+                        <button class="circle red"    onclick="setCor('red', this)"    title="Reclamação Cliente"></button>
+                        <button class="circle yellow" onclick="setCor('yellow', this)" title="Reclamação Interna"></button>
+                        <button class="circle green"  onclick="setCor('green', this)"  title="Sem Reclamação"></button>
+                    </div>
+
+                    <div id="fields" class="hidden">
+                        <div class="form-section">
+
+                            <!-- Linha 1: Setor + Máquina -->
+                            <div class="form-row">
+                                <div class="field">
+                                    <label>Setor Fabril</label>
+                                    <select id="setor" onchange="loadLines()">
+                                        <option value="">Selecione...</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label>Linha / Máquina</label>
+                                    <select id="maquina"></select>
+                                </div>
+                            </div>
+
+                            <!-- Linha 2: Produto + Cliente -->
+                            <div class="form-row">
+                                <div class="field">
+                                    <label>Produto</label>
+                                    <select id="produto">
+                                        <option value="">Selecione o setor primeiro</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label>Cliente</label>
+                                    <select id="cliente">
+                                        <option value="">Selecione...</option>
+                                        <option value="GM">GM</option>
+                                        <option value="TOYOTA">TOYOTA</option>
+                                        <option value="VW">VW</option>
+                                        <option value="FIAT">FIAT</option>
+                                        <option value="JEEP">JEEP</option>
+                                        <option value="Interno">Interno</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Linha 3: Motivo + Inspetor -->
+                            <div class="form-row">
+                                <div class="field">
+                                    <label>Motivo do Refugo</label>
+                                    <select id="motivo">
+                                        <option value="">Selecione...</option>
+                                        <option value="Mancha">Mancha</option>
+                                        <option value="Deformação">Deformação</option>
+                                        <option value="Impureza">Impureza</option>
+                                        <option value="Risco">Risco</option>
+                                        <option value="Quebra">Quebra</option>
+                                    </select>
+                                </div>
+                                <div class="field">
+                                    <label>Inspetor Responsável</label>
+                                    <select id="inspetor">
+                                        <option value="">Selecione...</option>
+                                        <option value="JONATHAN">JONATHAN</option>
+                                        <option value="GABRIEL">GABRIEL</option>
+                                        <option value="ALEXANDRO">ALEXANDRO</option>
+                                        <option value="ISAIAS">ISAIAS</option>
+                                    </select>
+                                </div>
+                            </div>
+
+                            <!-- Linha 4: Qtd -->
+                            <div class="form-row">
+                                <div class="field">
+                                    <label>Qtd. Defeituosa</label>
+                                    <input type="number" id="qtd" placeholder="0" min="0">
+                                </div>
+                            </div>
+
+                            <!-- Linha 5: Descrição livre -->
+                            <div class="field">
+                                <label>Descrição Adicional (opcional)</label>
+                                <textarea id="descricao" placeholder="Detalhes adicionais sobre a ocorrência..."></textarea>
+                            </div>
+                        </div>
+
+                        <button class="btn-save" onclick="saveData()">▶ SALVAR APONTAMENTO</button>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <!-- ═══ ABA 2: ANALYTICS ═══ -->
+    <section id="tab-graficos" class="tab-content">
+
+        <!-- Filtros -->
+        <div class="analytics-header">
+            <div class="analytics-title">▸ PAINEL DE INDICADORES DE QUALIDADE</div>
+            <div class="filter-bar">
+                <select id="filter-ano" style="width:82px">
+                    <option value="2026">2026</option>
+                    <option value="2025">2025</option>
+                    <option value="2024">2024</option>
+                </select>
+                <select id="filter-mes" style="width:108px">
+                    <option value="">Todos meses</option>
+                    <option value="1">Janeiro</option><option value="2">Fevereiro</option>
+                    <option value="3">Março</option><option value="4">Abril</option>
+                    <option value="5">Maio</option><option value="6">Junho</option>
+                    <option value="7">Julho</option><option value="8">Agosto</option>
+                    <option value="9">Setembro</option><option value="10">Outubro</option>
+                    <option value="11">Novembro</option><option value="12">Dezembro</option>
+                </select>
+                <select id="filter-motivo" style="width:108px">
+                    <option value="">Todos motivos</option>
+                </select>
+                <select id="filter-cliente" style="width:100px">
+                    <option value="">Todos clientes</option>
+                </select>
+                <select id="filter-produto" style="width:130px">
+                    <option value="">Todos produtos</option>
+                </select>
+                <select id="filter-inspetor" style="width:118px">
+                    <option value="">Todos inspetores</option>
+                </select>
+                <button class="btn-filter" onclick="applyFilter()">FILTRAR</button>
+                <button class="btn-filter" onclick="
+                    document.getElementById('filter-mes').value='';
+                    document.getElementById('filter-motivo').value='';
+                    document.getElementById('filter-cliente').value='';
+                    document.getElementById('filter-produto').value='';
+                    document.getElementById('filter-inspetor').value='';
+                    applyFilter();">✕ LIMPAR</button>
+            </div>
+        </div>
+
+        <!-- KPIs -->
+        <div class="kpi-grid">
+            <div class="kpi-card">
+                <div class="kpi-label">Total NC</div>
+                <div class="kpi-value accent" id="kpi-total">—</div>
+                <div class="kpi-sub">ocorrências registradas</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Ext. Cliente</div>
+                <div class="kpi-value red" id="kpi-red">—</div>
+                <div class="kpi-sub">reclamações externas</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Internas</div>
+                <div class="kpi-value yellow" id="kpi-yellow">—</div>
+                <div class="kpi-sub">reclamações internas</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Dias OK</div>
+                <div class="kpi-value green" id="kpi-green">—</div>
+                <div class="kpi-sub">sem reclamações</div>
+            </div>
+            <div class="kpi-card">
+                <div class="kpi-label">Top Cliente NC</div>
+                <div class="kpi-value" id="kpi-top-cliente" style="font-size:1rem;color:#e6edf3">—</div>
+                <div class="kpi-sub">maior reclamante</div>
+            </div>
+        </div>
+
+        <!-- Charts -->
+        <div class="charts-grid">
+
+            <!-- Tendência diária — FULL -->
+            <div class="chart-card chart-full">
+                <div class="chart-header">
+                    <span class="chart-title">📈 Tendência Diária de NC — Meta: 3/dia</span>
+                    <div class="chart-actions">
+                        <button class="btn-drill active" onclick="renderTendencia()">ATUALIZAR</button>
+                    </div>
+                </div>
+                <div class="chart-body"><div id="chart-trend" style="height:280px"></div></div>
+            </div>
+
+            <!-- Comparativo Anual — FULL -->
+            <div class="chart-card chart-full">
+                <div class="chart-header">
+                    <span class="chart-title">📅 Comparativo Anual por Mês — Meta: 10/mês</span>
+                    <div class="chart-actions">
+                        <button class="btn-drill active" onclick="renderAnualBar()">ANUAL</button>
+                    </div>
+                </div>
+                <div class="chart-body"><div id="chart-anual" style="height:240px"></div></div>
+            </div>
+
+            <!-- Pareto Setor -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <span class="chart-title">🔍 Pareto por Setor (drill-down)</span>
+                    <div class="chart-actions">
+                        <button class="btn-drill" onclick="renderParetoSetor()">RESET</button>
+                    </div>
+                </div>
+                <div id="setor-breadcrumb" class="drill-breadcrumb" style="display:none"></div>
+                <div class="chart-body"><div id="chart-setor" style="height:280px"></div></div>
+            </div>
+
+            <!-- Turno Pie -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <span class="chart-title">🔄 Distribuição por Turno Produtivo</span>
+                </div>
+                <div class="chart-body"><div id="chart-turno" style="height:280px"></div></div>
+            </div>
+
+            <!-- Top Clientes -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <span class="chart-title">👥 Top Clientes — Reclamações Externas</span>
+                </div>
+                <div class="chart-body"><div id="chart-cliente" style="height:280px"></div></div>
+            </div>
+
+            <!-- Top Produtos -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <span class="chart-title">📦 Top Produtos — Por Nº de NC</span>
+                </div>
+                <div class="chart-body"><div id="chart-produto" style="height:280px"></div></div>
+            </div>
+
+            <!-- Motivos de Refugo -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <span class="chart-title">⚠️ Motivos de Refugo — Pareto</span>
+                </div>
+                <div class="chart-body"><div id="chart-motivo" style="height:280px"></div></div>
+            </div>
+
+            <!-- Apontamentos por Inspetor -->
+            <div class="chart-card">
+                <div class="chart-header">
+                    <span class="chart-title">👤 NC por Inspetor</span>
+                </div>
+                <div class="chart-body"><div id="chart-inspetor" style="height:280px"></div></div>
+            </div>
+
+            <!-- Top 15 Máquinas — FULL -->
+            <div class="chart-card chart-full">
+                <div class="chart-header">
+                    <span class="chart-title">🏭 Top 15 Máquinas / Linhas — Ranking de NC</span>
+                    <div class="chart-actions">
+                        <span style="font-size:0.65rem;color:#6e7681">
+                            <span style="color:#58a6ff">■</span> Injeção &nbsp;
+                            <span style="color:#d29922">■</span> Metalização &nbsp;
+                            <span style="color:#2ea043">■</span> Mont. Small &nbsp;
+                            <span style="color:#f85149">■</span> Lanternas
+                        </span>
+                    </div>
+                </div>
+                <div class="chart-body"><div id="chart-linha" style="height:280px"></div></div>
+            </div>
+
+        </div>
+    </section>
+
+</main>
+
+<div id="toast" class="toast"></div>
+<script src="js/app.js"></script>
+</body>
+</html>
